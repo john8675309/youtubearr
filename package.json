@@ -1,0 +1,18 @@
+{
+  "name": "youtube-search-server",
+  "version": "1.0.0",
+  "description": "Simple web server for searching YouTube videos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["youtube", "search", "web server"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "youtube-search-without-api-key": "^2.0.7",
+    "node-id3": "^0.2.6",
+    "musicbrainz-api": "^1.0.0"
+  }
+}
