@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Album Manager - YouTube Music</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs a {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .nav-tabs a:hover, .nav-tabs a.active {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .albums-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .album-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+        
+        .album-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .album-cover {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+        }
+        
+        .album-info {
+            padding: 15px;
+        }
+        
+        .album-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .album-artist {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .album-year {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        
+        .album-tracks {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .album-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 95%;
+            width: 95%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: #333;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+        
+        .close-btn:hover {
+            color: #333;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: #667eea;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .status-with-spinner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        
+        .track-list {
+            margin-top: 20px;
+        }
+        
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .track-number {
+            font-weight: bold;
+            color: #667eea;
+            min-width: 30px;
+        }
+        
+        .track-title {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .track-status {
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 3px;
+        }
+        
+        .track-status.downloaded {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .track-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .track-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .search-inline {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .search-inline input {
+            flex: 1;
+            margin: 0;
+        }
+        
+        .search-results-mini {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .result-item-mini {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .result-item-mini:hover {
+            background: #f0f0f0;
+        }
+        
+        .result-thumb {
+            width: 60px;
+            height: 45px;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+        
+        .result-info {
+            flex: 1;
+        }
+        
+        .result-title {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+        
+        .result-duration {
+            font-size: 11px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Album Manager</h1>
+            <p>Organize your music collection</p>
+        </header>
+        
+        <div class="nav-tabs">
+            <a href="/" class="active">🔍 Search</a>
+            <a href="/albums.html">📚 Albums</a>
+        </div>
+        
+        <div class="card">
+            <button class="btn btn-primary" onclick="openNewAlbumModal()">+ New Album</button>
+            <button class="btn btn-success" onclick="openImportModal()" style="margin-left: 10px;">🎵 Search MusicBrainz</button>
+            <button class="btn btn-primary" onclick="openSettingsModal()" style="margin-left: 10px;">⚙️ Settings</button>
+        </div>
+        
+        <div class="albums-grid" id="albumsGrid">
+            <!-- Albums will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- New Album Modal -->
+    <div class="modal" id="newAlbumModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Album</h2>
+                <button class="close-btn" onclick="closeModal('newAlbumModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Album Title *</label>
+                <input type="text" id="albumTitle" placeholder="Enter album title">
+            </div>
+            <div class="form-group">
+                <label>Artist *</label>
+                <input type="text" id="albumArtist" placeholder="Enter artist name">
+            </div>
+            <div class="form-group">
+                <label>Year</label>
+                <input type="number" id="albumYear" placeholder="2024">
+            </div>
+            <div class="form-group">
+                <label>Genre (optional)</label>
+                <input type="text" id="albumGenre" placeholder="Rock, Pop, Jazz, etc.">
+            </div>
+            <div class="form-group">
+                <label>Cover URL (optional)</label>
+                <input type="text" id="albumCover" placeholder="https://example.com/cover.jpg">
+            </div>
+            <button class="btn btn-success" onclick="createAlbum()">Create Album</button>
+        </div>
+    </div>
+    
+    <!-- Import Album Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Search MusicBrainz</h2>
+                <button class="close-btn" onclick="closeModal('importModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Artist Name *</label>
+                <input type="text" id="importArtist" placeholder="Enter artist name">
+            </div>
+            <div class="form-group">
+                <label>Album Title *</label>
+                <input type="text" id="importAlbum" placeholder="Enter album title">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    Search the MusicBrainz database for album information
+                </small>
+            </div>
+            <div id="importStatus" style="margin: 15px 0; padding: 10px; border-radius: 5px; display: none;"></div>
+            <button class="btn btn-success" onclick="importFromMusicBrainz()">Search & Import</button>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="close-btn" onclick="closeModal('settingsModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Output Directory *</label>
+                <input type="text" id="outputDirectory" placeholder="/path/to/music">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    Base directory for music files. Files will be organized as:<br>
+                    <strong>Directory/Artist Name/Album Name [Year]/Song.mp3</strong><br>
+                    Example: /mnt/media/Pink Floyd/The Dark Side of the Moon [1973]/01 Pink Floyd - ...mp3
+                </small>
+            </div>
+            <div id="settingsStatus" style="margin: 15px 0; padding: 10px; border-radius: 5px; display: none;"></div>
+            <button class="btn btn-success" onclick="saveSettings()">Save Settings</button>
+            
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #e0e0e0;">
+            
+            <div class="form-group">
+                <label>yt-dlp Updater</label>
+                <p style="color: #666; font-size: 14px; margin-bottom: 10px;">
+                    Keep yt-dlp up to date for the best compatibility and features
+                </p>
+                <button class="btn btn-primary" onclick="updateYtDlp()">🔄 Update yt-dlp</button>
+            </div>
+            <div id="ytdlpStatus" style="margin: 15px 0; padding: 10px; border-radius: 5px; display: none;"></div>
+        </div>
+    </div>
+    
+    <!-- Album Details Modal -->
+    <div class="modal" id="albumDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="detailsAlbumTitle">Album Details</h2>
+                <button class="close-btn" onclick="closeModal('albumDetailsModal')">&times;</button>
+            </div>
+            <div id="albumDetailsContent">
+                <!-- Album details and tracks will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let albums = [];
+        let currentAlbum = null;
+        let currentTrack = null;
+        
+        // Load albums on page load
+        loadAlbums();
+        
+        async function loadAlbums() {
+            try {
+                const response = await fetch('/api/albums');
+                const data = await response.json();
+                albums = data.albums;
+                renderAlbums();
+            } catch (err) {
+                console.error('Error loading albums:', err);
+            }
+        }
+        
+        function renderAlbums() {
+            const grid = document.getElementById('albumsGrid');
+            
+            if (albums.length === 0) {
+                grid.innerHTML = '<div class="card"><p style="text-align: center; color: #666;">No albums yet. Create your first album!</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = albums.map(album => `
+                <div class="album-card">
+                    ${album.coverUrl ? 
+                        `<img src="${album.coverUrl}" alt="${album.title}" class="album-cover">` :
+                        `<div class="album-cover">🎵</div>`
+                    }
+                    <div class="album-info">
+                        <div class="album-title">${escapeHtml(album.title)}</div>
+                        <div class="album-artist">${escapeHtml(album.artist)}</div>
+                        <div class="album-year">${album.year}</div>
+                        <div class="album-tracks">${album.tracks.length} tracks</div>
+                        <div class="album-actions">
+                            <button class="btn btn-primary btn-small" onclick="viewAlbum('${album.id}')">View</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteAlbum('${album.id}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openNewAlbumModal() {
+            document.getElementById('newAlbumModal').classList.add('active');
+        }
+        
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('active');
+            document.getElementById('importStatus').style.display = 'none';
+        }
+        
+        async function openSettingsModal() {
+            document.getElementById('settingsModal').classList.add('active');
+            document.getElementById('settingsStatus').style.display = 'none';
+            
+            // Load current settings
+            try {
+                const response = await fetch('/api/settings');
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('outputDirectory').value = data.settings.outputDirectory || '';
+                }
+            } catch (err) {
+                console.error('Error loading settings:', err);
+            }
+        }
+        
+        async function saveSettings() {
+            const outputDirectory = document.getElementById('outputDirectory').value.trim();
+            const statusEl = document.getElementById('settingsStatus');
+            
+            if (!outputDirectory) {
+                alert('Please enter an output directory');
+                return;
+            }
+            
+            try {
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#cce5ff';
+                statusEl.style.color = '#004085';
+                statusEl.textContent = 'Saving settings...';
+                
+                const response = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ outputDirectory })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.textContent = 'Settings saved! MP3 files will be saved to: ' + outputDirectory;
+                    
+                    setTimeout(() => {
+                        closeModal('settingsModal');
+                        statusEl.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Failed to save settings');
+                }
+            } catch (err) {
+                console.error('Error saving settings:', err);
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.textContent = `Error: ${err.message}`;
+            }
+        }
+        
+        async function updateYtDlp() {
+            const statusEl = document.getElementById('ytdlpStatus');
+            const button = event.target;
+            
+            try {
+                // Disable button and show loading
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner"></span> Updating...';
+                
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#cce5ff';
+                statusEl.style.color = '#004085';
+                statusEl.innerHTML = '<div class="status-with-spinner"><span class="spinner"></span><span>Updating yt-dlp... This may take a minute.</span></div>';
+                
+                const response = await fetch('/api/update-ytdlp', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.innerHTML = '✓ yt-dlp updated successfully!<br><small style="font-size: 12px; margin-top: 5px; display: block;">' + 
+                        escapeHtml(data.output || data.message) + '</small>';
+                } else {
+                    throw new Error(data.message || 'Update failed');
+                }
+                
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '🔄 Update yt-dlp';
+                
+            } catch (err) {
+                console.error('Error updating yt-dlp:', err);
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.textContent = `Error: ${err.message}`;
+                
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '🔄 Update yt-dlp';
+            }
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        async function createAlbum() {
+            const title = document.getElementById('albumTitle').value.trim();
+            const artist = document.getElementById('albumArtist').value.trim();
+            const year = document.getElementById('albumYear').value || new Date().getFullYear();
+            const genre = document.getElementById('albumGenre').value.trim();
+            const coverUrl = document.getElementById('albumCover').value.trim();
+            
+            if (!title || !artist) {
+                alert('Title and artist are required');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/albums', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, artist, year, genre, coverUrl })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    albums.push(data.album);
+                    renderAlbums();
+                    closeModal('newAlbumModal');
+                    
+                    // Clear form
+                    document.getElementById('albumTitle').value = '';
+                    document.getElementById('albumArtist').value = '';
+                    document.getElementById('albumYear').value = '';
+                    document.getElementById('albumGenre').value = '';
+                    document.getElementById('albumCover').value = '';
+                }
+            } catch (err) {
+                console.error('Error creating album:', err);
+                alert('Failed to create album');
+            }
+        }
+        
+        async function importFromAppleMusic() {
+            const artist = document.getElementById('importArtist').value.trim();
+            const album = document.getElementById('importAlbum').value.trim();
+            const statusEl = document.getElementById('importStatus');
+            
+            if (!artist || !album) {
+                alert('Please enter both artist and album name');
+                return;
+            }
+            
+            try {
+                // Show loading status
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#cce5ff';
+                statusEl.style.color = '#004085';
+                statusEl.textContent = 'Searching MusicBrainz database...';
+                
+                const response = await fetch('/api/albums/import', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ artist, album })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success
+                    statusEl.style.background = '#d4edda';
+                    statusEl.style.color = '#155724';
+                    statusEl.textContent = data.message || 'Album imported successfully!';
+                    
+                    // Add to albums list
+                    albums.push(data.album);
+                    renderAlbums();
+                    
+                    // Clear form and close modal after 2 seconds
+                    setTimeout(() => {
+                        closeModal('importModal');
+                        document.getElementById('importArtist').value = '';
+                        document.getElementById('importAlbum').value = '';
+                        statusEl.style.display = 'none';
+                    }, 2000);
+                } else {
+                    throw new Error(data.error || 'Failed to import album');
+                }
+                
+            } catch (err) {
+                console.error('Error importing album:', err);
+                statusEl.style.display = 'block';
+                statusEl.style.background = '#f8d7da';
+                statusEl.style.color = '#721c24';
+                statusEl.textContent = `Error: ${err.message}`;
+            }
+        }
+        
+        // Alias for compatibility
+        const importFromMusicBrainz = importFromAppleMusic;
+        
+        async function deleteAlbum(albumId) {
+            if (!confirm('Are you sure you want to delete this album?')) return;
+            
+            try {
+                const response = await fetch(`/api/albums/${albumId}`, { method: 'DELETE' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    albums = albums.filter(a => a.id !== albumId);
+                    renderAlbums();
+                }
+            } catch (err) {
+                console.error('Error deleting album:', err);
+                alert('Failed to delete album');
+            }
+        }
+        
+        async function viewAlbum(albumId) {
+            currentAlbum = albums.find(a => a.id === albumId);
+            if (!currentAlbum) return;
+            
+            document.getElementById('detailsAlbumTitle').textContent = currentAlbum.title;
+            
+            const content = `
+                <div style="margin-bottom: 20px;">
+                    <strong>Artist:</strong> ${escapeHtml(currentAlbum.artist)}<br>
+                    <strong>Year:</strong> ${currentAlbum.year}<br>
+                    <strong>Genre:</strong> ${escapeHtml(currentAlbum.genre || 'Unknown')}<br>
+                    <strong>Tracks:</strong> ${currentAlbum.tracks.length}
+                </div>
+                
+                <h3>Tracks</h3>
+                <button class="btn btn-success btn-small" onclick="addTrack()">+ Add Track</button>
+                
+                <div class="track-list" id="trackList">
+                    ${renderTracks(currentAlbum)}
+                </div>
+            `;
+            
+            document.getElementById('albumDetailsContent').innerHTML = content;
+            document.getElementById('albumDetailsModal').classList.add('active');
+        }
+        
+        function renderTracks(album) {
+            if (album.tracks.length === 0) {
+                return '<p style="margin-top: 10px; color: #666;">No tracks yet. Add your first track!</p>';
+            }
+            
+            return album.tracks.map(track => `
+                <div class="track-item">
+                    <div class="track-number">${track.trackNumber}</div>
+                    <div class="track-title">${escapeHtml(track.title)}</div>
+                    <div class="track-status ${track.downloaded ? 'downloaded' : 'pending'}">
+                        ${track.downloaded ? '✓ Downloaded' : 'Pending'}
+                    </div>
+                    <div class="track-actions">
+                        <button class="btn btn-primary btn-small" onclick="searchForTrack('${track.id}')">🔍</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteTrack('${track.id}')">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function addTrack() {
+            const title = prompt('Enter track title:');
+            if (!title) return;
+            
+            const trackNumber = prompt('Track number:', currentAlbum.tracks.length + 1);
+            if (!trackNumber) return;
+            
+            try {
+                const response = await fetch(`/api/albums/${currentAlbum.id}/tracks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, trackNumber: parseInt(trackNumber) })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentAlbum.tracks.push(data.track);
+                    document.getElementById('trackList').innerHTML = renderTracks(currentAlbum);
+                    loadAlbums(); // Refresh album list
+                }
+            } catch (err) {
+                console.error('Error adding track:', err);
+                alert('Failed to add track');
+            }
+        }
+        
+        async function deleteTrack(trackId) {
+            if (!confirm('Delete this track?')) return;
+            
+            try {
+                const response = await fetch(`/api/albums/${currentAlbum.id}/tracks/${trackId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    currentAlbum.tracks = currentAlbum.tracks.filter(t => t.id !== trackId);
+                    document.getElementById('trackList').innerHTML = renderTracks(currentAlbum);
+                    loadAlbums(); // Refresh album list
+                }
+            } catch (err) {
+                console.error('Error deleting track:', err);
+                alert('Failed to delete track');
+            }
+        }
+        
+        async function searchForTrack(trackId) {
+            currentTrack = currentAlbum.tracks.find(t => t.id === trackId);
+            if (!currentTrack) return;
+            
+            const searchQuery = `${currentAlbum.artist} ${currentTrack.title}`;
+            
+            // Create inline search UI
+            const trackItem = event.target.closest('.track-item');
+            let searchUI = trackItem.querySelector('.search-inline');
+            
+            if (searchUI) {
+                searchUI.remove();
+                return;
+            }
+            
+            searchUI = document.createElement('div');
+            searchUI.className = 'search-inline';
+            searchUI.innerHTML = `
+                <input type="text" value="${escapeHtml(searchQuery)}" id="trackSearch_${trackId}">
+                <button class="btn btn-primary btn-small" onclick="performTrackSearch('${trackId}')">Search</button>
+            `;
+            
+            trackItem.appendChild(searchUI);
+            
+            // Auto-search
+            performTrackSearch(trackId);
+        }
+        
+        async function performTrackSearch(trackId) {
+            const searchInput = document.getElementById(`trackSearch_${trackId}`);
+            const query = searchInput.value.trim();
+            
+            if (!query) return;
+            
+            try {
+                const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success && data.results.length > 0) {
+                    showSearchResults(trackId, data.results);
+                }
+            } catch (err) {
+                console.error('Error searching:', err);
+            }
+        }
+        
+        function showSearchResults(trackId, results) {
+            // Find the track item by looking for the search input with this trackId
+            const searchInput = document.getElementById(`trackSearch_${trackId}`);
+            if (!searchInput) {
+                console.error('Could not find track item for trackId:', trackId);
+                return;
+            }
+            
+            const trackItem = searchInput.closest('.track-item');
+            let resultsDiv = trackItem.querySelector('.search-results-mini');
+            
+            if (resultsDiv) {
+                resultsDiv.remove();
+            }
+            
+            resultsDiv = document.createElement('div');
+            resultsDiv.className = 'search-results-mini';
+            resultsDiv.innerHTML = results.slice(0, 5).map(video => `
+                <div class="result-item-mini" onclick="downloadTrack('${trackId}', '${video.id}', event)">
+                    <img src="${video.thumbnail}" class="result-thumb" alt="">
+                    <div class="result-info">
+                        <div class="result-title">${escapeHtml(video.title)}</div>
+                        <div class="result-duration">${video.duration}</div>
+                    </div>
+                    <button class="btn btn-success btn-small">⬇️ Download</button>
+                </div>
+            `).join('');
+            
+            trackItem.appendChild(resultsDiv);
+        }
+        
+        async function downloadTrack(trackId, videoId, evt) {
+            const track = currentAlbum.tracks.find(t => t.id === trackId);
+            if (!track) return;
+            
+            try {
+                // Update UI - find the track item
+                const searchInput = document.getElementById(`trackSearch_${trackId}`);
+                const trackItem = searchInput ? searchInput.closest('.track-item') : evt.target.closest('.track-item');
+                
+                if (!trackItem) {
+                    console.error('Could not find track item');
+                    return;
+                }
+                
+                const statusEl = trackItem.querySelector('.track-status');
+                
+                // Show spinner while downloading
+                statusEl.innerHTML = '<div class="status-with-spinner"><span class="spinner"></span><span>Downloading...</span></div>';
+                statusEl.className = 'track-status';
+                statusEl.style.color = '#667eea';
+                
+                // Download with metadata
+                const url = `/api/download?id=${videoId}&albumId=${currentAlbum.id}&trackId=${trackId}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error('Download failed');
+                }
+                
+                // Get the JSON response (not a file download anymore)
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.message || 'Download failed');
+                }
+                
+                // Update UI with success and file location
+                statusEl.innerHTML = '✓ Downloaded';
+                statusEl.className = 'track-status downloaded';
+                
+                // Show where file was saved
+                console.log('File saved to:', data.path);
+                
+                // Refresh
+                await loadAlbums();
+                viewAlbum(currentAlbum.id);
+                
+            } catch (err) {
+                console.error('Download error:', err);
+                const searchInput = document.getElementById(`trackSearch_${trackId}`);
+                const trackItem = searchInput ? searchInput.closest('.track-item') : evt.target.closest('.track-item');
+                if (trackItem) {
+                    const statusEl = trackItem.querySelector('.track-status');
+                    statusEl.innerHTML = '✗ Error';
+                    statusEl.className = 'track-status';
+                    statusEl.style.color = '#dc3545';
+                }
+                alert('Failed to download track: ' + err.message);
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
