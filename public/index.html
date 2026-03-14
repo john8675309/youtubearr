@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .nav-tabs a {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .nav-tabs a:hover, .nav-tabs a.active {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .search-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        #searchInput {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        #searchInput:focus {
+            border-color: #667eea;
+        }
+        
+        select {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            outline: none;
+            background: white;
+            cursor: pointer;
+        }
+        
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+            padding: 20px;
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        
+        .video-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .video-thumbnail {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+        
+        .video-info {
+            padding: 15px;
+        }
+        
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-download {
+            flex: 1;
+            padding: 8px 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .btn-download:hover {
+            background: #218838;
+        }
+        
+        .btn-download:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-watch {
+            flex: 1;
+            padding: 8px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .btn-watch:hover {
+            background: #5568d3;
+        }
+        
+        .download-status {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        .download-status.downloading {
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .download-status.success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .download-status.error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .video-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .video-meta {
+            font-size: 13px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .thumbnail-container {
+            position: relative;
+        }
+        
+        .error {
+            background: #ff6b6b;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .result-count {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Youtubearr Search</h1>
+            <p>Search for any video on YouTube</p>
+        </header>
+        
+        <div class="nav-tabs">
+            <a href="/" class="active">🔍 Search</a>
+            <a href="/albums.html">📚 Albums</a>
+        </div>
+        
+        <div class="search-box">
+            <form class="search-form" id="searchForm">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="Search for videos..."
+                    required
+                >
+                <select id="durationFilter">
+                    <option value="">Any duration</option>
+                    <option value="under">Under 4 minutes</option>
+                    <option value="between">4-20 minutes</option>
+                    <option value="over">Over 20 minutes</option>
+                </select>
+                <button type="submit" id="searchBtn">Search</button>
+            </form>
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            Searching YouTube...
+        </div>
+        
+        <div id="error" class="error" style="display: none;"></div>
+        
+        <div id="resultCount" class="result-count" style="display: none;"></div>
+        
+        <div id="results" class="results"></div>
+    </div>
+    
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const durationFilter = document.getElementById('durationFilter');
+        const searchBtn = document.getElementById('searchBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const resultCount = document.getElementById('resultCount');
+        const resultsContainer = document.getElementById('results');
+        
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const query = searchInput.value.trim();
+            const duration = durationFilter.value;
+            
+            if (!query) return;
+            
+            // Show loading, hide results
+            loading.style.display = 'block';
+            error.style.display = 'none';
+            resultCount.style.display = 'none';
+            resultsContainer.innerHTML = '';
+            searchBtn.disabled = true;
+            
+            try {
+                // Make API request
+                const url = `/api/search?q=${encodeURIComponent(query)}${duration ? `&duration=${duration}` : ''}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                searchBtn.disabled = false;
+                
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Failed to search');
+                }
+                
+                // Display results
+                if (data.results.length === 0) {
+                    resultCount.textContent = 'No results found';
+                    resultCount.style.display = 'block';
+                    return;
+                }
+                
+                resultCount.textContent = `Found ${data.count} results`;
+                resultCount.style.display = 'block';
+                
+                data.results.forEach(video => {
+                    const card = createVideoCard(video);
+                    resultsContainer.appendChild(card);
+                });
+                
+            } catch (err) {
+                loading.style.display = 'none';
+                searchBtn.disabled = false;
+                error.textContent = `Error: ${err.message}`;
+                error.style.display = 'block';
+            }
+        });
+        
+        function createVideoCard(video) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            
+            card.innerHTML = `
+                <div class="thumbnail-container">
+                    <img 
+                        src="${video.thumbnail}" 
+                        alt="${video.title}"
+                        class="video-thumbnail"
+                        onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22320%22 height=%22180%22%3E%3Crect width=%22320%22 height=%22180%22 fill=%22%23ddd%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 fill=%22%23999%22%3ENo Image%3C/text%3E%3C/svg%3E'"
+                    >
+                    <div class="video-duration">${video.duration}</div>
+                </div>
+                <div class="video-info">
+                    <div class="video-title">${escapeHtml(video.title)}</div>
+                    <div class="video-meta">
+                        <span>${video.publishedAt}</span>
+                        <span>${video.views} views</span>
+                    </div>
+                    <div class="video-actions">
+                        <button class="btn-watch" onclick="window.open('${video.url}', '_blank')">
+                            ▶️ Watch
+                        </button>
+                        <button class="btn-download" onclick="downloadVideo('${video.id}', this)">
+                            ⬇️ MP3
+                        </button>
+                    </div>
+                    <div class="download-status" id="status-${video.id}"></div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        async function downloadVideo(videoId, button) {
+            const statusEl = document.getElementById(`status-${videoId}`);
+            
+            try {
+                // Disable button and show status
+                button.disabled = true;
+                statusEl.textContent = 'Downloading and converting...';
+                statusEl.className = 'download-status downloading';
+                
+                // Make download request
+                const response = await fetch(`/api/download?id=${videoId}`);
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Download failed');
+                }
+                
+                // Get the filename from Content-Disposition header
+                const contentDisposition = response.headers.get('Content-Disposition');
+                let filename = 'audio.mp3';
+                if (contentDisposition) {
+                    const match = contentDisposition.match(/filename="?(.+)"?/);
+                    if (match) filename = match[1];
+                }
+                
+                // Download the file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Success
+                statusEl.textContent = '✓ Downloaded!';
+                statusEl.className = 'download-status success';
+                button.disabled = false;
+                
+                // Clear status after 3 seconds
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                    statusEl.className = 'download-status';
+                }, 3000);
+                
+            } catch (err) {
+                console.error('Download error:', err);
+                statusEl.textContent = `✗ Error: ${err.message}`;
+                statusEl.className = 'download-status error';
+                button.disabled = false;
+                
+                // Clear error after 5 seconds
+                setTimeout(() => {
+                    statusEl.textContent = '';
+                    statusEl.className = 'download-status';
+                }, 5000);
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Trigger search on page load with default query
+        searchForm.dispatchEvent(new Event('submit'));
+    </script>
+</body>
+</html>
